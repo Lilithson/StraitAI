@@ -1,0 +1,42 @@
+{% extends "core/base.html" %}
+
+{% block title %}Enter grades | StraitAI{% endblock %}
+
+{% block content %}
+  <div class="eyebrow">{{ assessment.offering.course.code }} | {{ assessment.title }}</div>
+  <h1>Enter grades</h1>
+  <p class="subhead">Maximum score: {{ assessment.max_score }}. Leave a score blank to mark it as not yet recorded; existing blanked scores are removed.</p>
+
+  <div class="card">
+    <form method="post">
+      {% csrf_token %}
+      {{ formset.management_form }}
+      {% if formset.non_form_errors %}
+        <div class="notice error">{{ formset.non_form_errors }}</div>
+      {% endif %}
+
+      <div class="table-wrap">
+        <table class="table">
+          <tr><th>Student</th><th>Student number</th><th>Score</th></tr>
+          {% for form in formset %}
+            <tr>
+              <td>
+                {{ form.enrollment.student.user.get_full_name|default:form.enrollment.student.user.username }}
+                {{ form.enrollment_id }}
+              </td>
+              <td>{{ form.enrollment.student.student_number }}</td>
+              <td>{{ form.score }}{{ form.score.errors }}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="3" class="empty">No active enrollments exist for this offering.</td></tr>
+          {% endfor %}
+        </table>
+      </div>
+
+      <div class="actions">
+        <button class="button" type="submit">Save grades</button>
+        <a class="button secondary" href="{% url 'assessments:detail' assessment.pk %}">Back</a>
+      </div>
+    </form>
+  </div>
+{% endblock %}
