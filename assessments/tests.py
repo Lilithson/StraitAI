@@ -7,6 +7,7 @@ from django.test import TestCase
 from accounts.models import Enrollment, StudentProfile
 from academics.models import AcademicTerm, Course, CourseOffering, LearningOutcome, Program
 from assessments.models import Assessment, AssessmentLearningOutcomeMapping, Grade
+from assessments.scoring import calculate_learning_outcome_scores
 from assessments.services import save_bulk_grades
 
 
@@ -77,3 +78,43 @@ class GradeEntryTests(TestCase):
             Grade.objects.get(assessment=self.assessment, enrollment=self.enrollment).score,
             Decimal("81.50"),
         )
+
+    def test_outcome_score_uses_weighted_grade_percentages_and_skips_missing_grades(self):
+        learning_outcome = LearningOutcome.objects.create(
+            course=self.course, code="LO1", description="Design a data model"
+        )
+        AssessmentLearningOutcomeMapping.objects.create(
+            assessment=self.assessment, learning_outcome=learning_outcome, weight=Decimal("1.000")
+        )
+        final_exam = Assessment.objects.create(
+            offering=self.offering,
+            title="Final exam",
+            kind=Assessment.Kind.EXAM,
+            max_score=Decimal("50.00"),
+        )
+        AssessmentLearningOutcomeMapping.objects.create(
+            assessment=final_exam, learning_outcome=learning_outcome, weight=Decimal("3.000")
+        )
+        ungraded_project = Assessment.objects.create(
+            offering=self.offering,
+            title="Ungraded project",
+            kind=Assessment.Kind.PROJECT,
+            max_score=Decimal("100.00"),
+        )
+        AssessmentLearningOutcomeMapping.objects.create(
+            assessment=ungraded_project,
+            learning_outcome=learning_outcome,
+            weight=Decimal("10.000"),
+        )
+        Grade.objects.create(
+            assessment=self.assessment, enrollment=self.enrollment, score=Decimal("80.00")
+        )
+        Grade.objects.create(
+            assessment=final_exam, enrollment=self.enrollment, score=Decimal("25.00")
+        )
+
+        outcomes, student_scores = calculate_learning_outcome_scores(self.offering)
+
+        self.assertEqual([outcome.code for outcome in outcomes], ["LO1"])
+        self.assertEqual(student_scores[0].scores[0].score, Decimal("57.50"))
+        self.assertEqual(student_scores[0].scores[0].graded_assessment_count, 2)

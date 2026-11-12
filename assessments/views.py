@@ -6,7 +6,8 @@ from django.views import View
 from django.views.generic import CreateView, TemplateView
 
 from accounts.mixins import DepartmentHeadRequiredMixin
-from accounts.roles import ROLE_DEPARTMENT_HEAD, ROLE_INSTRUCTOR, has_role
+from accounts.roles import ROLE_DEPARTMENT_HEAD, ROLE_INSTRUCTOR, can_manage_offering, has_role
+from academics.models import CourseOffering
 from assessments.access import can_manage_assessment, manageable_offerings
 from assessments.forms import (
     AssessmentForm,
@@ -15,6 +16,7 @@ from assessments.forms import (
 )
 from assessments.models import Assessment
 from assessments.services import save_bulk_grades
+from assessments.scoring import calculate_learning_outcome_scores
 
 
 class AssessmentManagerRequiredMixin(DepartmentHeadRequiredMixin):
@@ -33,6 +35,7 @@ class AssessmentListView(AssessmentManagerRequiredMixin, TemplateView):
         context["assessments"] = Assessment.objects.filter(
             offering__in=manageable_offerings(self.request.user)
         ).select_related("offering__course", "offering__term")
+        context["offerings"] = manageable_offerings(self.request.user).select_related("course", "term")
         return context
 
 
@@ -120,3 +123,24 @@ class GradeEntryView(ManagedAssessmentMixin, View):
             self.template_name,
             {"assessment": assessment, "formset": formset},
         )
+
+
+class OutcomeScoreView(AssessmentManagerRequiredMixin, TemplateView):
+    template_name = "assessments/outcome_scores.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        offering = get_object_or_404(
+            CourseOffering.objects.select_related("course", "term"), pk=self.kwargs["pk"]
+        )
+        if not can_manage_offering(self.request.user, offering):
+            raise PermissionDenied
+        learning_outcomes, student_scores = calculate_learning_outcome_scores(offering)
+        context.update(
+            {
+                "offering": offering,
+                "learning_outcomes": learning_outcomes,
+                "student_scores": student_scores,
+            }
+        )
+        return context
