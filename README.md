@@ -48,7 +48,7 @@ StraitAI/
 
 ## Local Setup
 
-**Requirements:** Python 3.12+, PostgreSQL, Git and [uv](https://docs.astral.sh/uv/).
+**Requirements:** Python 3.12+, Git, [uv](https://docs.astral.sh/uv/) and Docker Desktop.
 
 Install `uv` by following the [official installation instructions](https://docs.astral.sh/uv/getting-started/installation/), then set up the project:
 
@@ -56,17 +56,31 @@ Install `uv` by following the [official installation instructions](https://docs.
 git clone <REPOSITORY_URL>
 cd <REPOSITORY_DIRECTORY>
 uv sync
-cp .env.example .env
 ```
 
-`uv sync` creates the project's `.venv` environment and installs the dependencies declared in `pyproject.toml`, using `uv.lock` for reproducible versions. You do not need to activate the virtual environment manually; use `uv run` for project commands.
+Create a local environment file and replace both placeholder secret values before proceeding:
 
-Configure your local PostgreSQL connection in `.env` according to the project's settings, then run:
+```powershell
+Copy-Item .env.example .env
+```
+
+`uv sync` creates the project's `.venv` environment and installs the dependencies declared in `pyproject.toml`, using `uv.lock` for reproducible versions. You do not need to activate the virtual environment manually; use `uv run` for project commands. Docker Compose reads `.env`; Django loads the same file without overriding environment variables supplied by the host.
+
+Start the local PostgreSQL service and wait for its health check to pass:
+
+```powershell
+docker compose up -d db
+docker compose ps
+```
+
+Then apply migrations and start Django:
 
 ```bash
 uv run python manage.py migrate
 uv run python manage.py runserver
 ```
+
+The health endpoint is available at `http://127.0.0.1:8000/health/`. To stop the local database, use `docker compose down`; add `--volumes` only when you intentionally want to delete all local database data.
 
 To add or update dependencies, use `uv add` and commit the resulting changes to `pyproject.toml` and `uv.lock`:
 
