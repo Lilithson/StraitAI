@@ -1,17 +1,9 @@
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, TemplateView
 
-from accounts.roles import ROLE_DEPARTMENT_HEAD, has_role
+from accounts.mixins import DepartmentHeadRequiredMixin
 from academics.forms import AcademicTermForm, CourseForm, CourseOfferingForm, LearningOutcomeForm, ProgramForm, ProgramOutcomeForm
 from academics.models import AcademicTerm, Course, CourseOffering, LearningOutcome, Program, ProgramOutcome
-
-
-class DepartmentHeadRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
-    """Allow academic setup only to superusers and Department Heads."""
-
-    def test_func(self):
-        return has_role(self.request.user, ROLE_DEPARTMENT_HEAD)
 
 
 class SetupOverviewView(DepartmentHeadRequiredMixin, TemplateView):

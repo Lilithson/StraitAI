@@ -1,6 +1,7 @@
 from django.contrib.auth.models import Group, User
 from django.db import IntegrityError
 from django.test import TestCase
+from django.urls import reverse
 
 from accounts.models import Enrollment, StudentProfile
 from accounts.roles import (
@@ -47,3 +48,30 @@ class EnrollmentTests(TestCase):
         self.assertTrue(can_manage_offering(instructor, self.offering))
         self.assertTrue(can_manage_offering(department_head, self.offering))
         self.assertFalse(can_manage_offering(self.student_user, self.offering))
+
+
+class StudentManagementViewTests(TestCase):
+    def setUp(self):
+        self.program = Program.objects.create(code="CSE", name="Computer Science")
+        self.department_head = User.objects.create_superuser(username="head", password="StrongPassword123")
+        self.client.force_login(self.department_head)
+
+    def test_department_head_can_create_a_student_account_and_profile(self):
+        response = self.client.post(
+            reverse("accounts:student-add"),
+            {
+                "username": "student1",
+                "first_name": "Ada",
+                "last_name": "Lovelace",
+                "email": "ada@example.com",
+                "student_number": "20260002",
+                "program": self.program.pk,
+                "password1": "StrongPassword123",
+                "password2": "StrongPassword123",
+            },
+        )
+
+        self.assertRedirects(response, reverse("accounts:students"))
+        self.assertTrue(StudentProfile.objects.filter(student_number="20260002").exists())
+        user = User.objects.get(username="student1")
+        self.assertTrue(user.groups.filter(name="Student").exists())
