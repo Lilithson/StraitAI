@@ -1,7 +1,9 @@
 from decimal import Decimal
 
+from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.test import TestCase
+from django.urls import reverse
 
 from academics.models import (
     Course,
@@ -58,3 +60,23 @@ class OutcomeMappingValidationTests(TestCase):
         )
 
         mapping.full_clean()
+
+
+class AcademicSetupAccessTests(TestCase):
+    def test_anonymous_user_is_redirected_to_sign_in(self):
+        response = self.client.get(reverse("academics:setup"))
+
+        self.assertRedirects(
+            response, f"{reverse('accounts:login')}?next={reverse('academics:setup')}"
+        )
+
+    def test_superuser_can_open_setup_and_create_a_program(self):
+        administrator = User.objects.create_superuser(username="admin", password="password")
+        self.client.force_login(administrator)
+
+        response = self.client.post(
+            reverse("academics:program-add"), {"code": "CSE", "name": "Computer Science"}
+        )
+
+        self.assertRedirects(response, reverse("academics:setup"))
+        self.assertTrue(Program.objects.filter(code="CSE").exists())

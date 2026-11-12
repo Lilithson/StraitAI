@@ -61,6 +61,8 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'config.urls'
+LOGIN_URL = "accounts:login"
+LOGIN_REDIRECT_URL = "academics:setup"
 
 TEMPLATES = [
     {

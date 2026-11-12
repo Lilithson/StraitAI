@@ -1,0 +1,3 @@
+{% extends "core/base.html" %}
+{% block title %}Sign in · StraitAI{% endblock %}
+{% block content %}<div class="card form-card"><div class="eyebrow">StraitAI workspace</div><h1>Sign in</h1><p class="subhead">Use your Django account to manage academic records.</p><form method="post">{% csrf_token %}{% if form.non_field_errors %}<div class="notice error">{{ form.non_field_errors }}</div>{% endif %}{% for field in form %}<div class="field"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{{ field.errors }}</div>{% endfor %}<button class="button" type="submit">Sign in</button></form></div>{% endblock %}
