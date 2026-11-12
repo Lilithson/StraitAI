@@ -75,3 +75,36 @@ class StudentManagementViewTests(TestCase):
         self.assertTrue(StudentProfile.objects.filter(student_number="20260002").exists())
         user = User.objects.get(username="student1")
         self.assertTrue(user.groups.filter(name="Student").exists())
+
+
+class StudentPortalTests(TestCase):
+    def setUp(self):
+        program = Program.objects.create(code="CSE", name="Computer Science")
+        course = Course.objects.create(
+            program=program, code="CSE201", title="Data Structures", credit_hours=3
+        )
+        term = AcademicTerm.objects.create(year=2026, season=AcademicTerm.Season.FALL)
+        offering = CourseOffering.objects.create(course=course, term=term, section="1")
+        self.student_user = User.objects.create_user(username="student", password="StrongPassword123")
+        self.student = StudentProfile.objects.create(
+            user=self.student_user, program=program, student_number="20260010"
+        )
+        Enrollment.objects.create(student=self.student, offering=offering)
+
+    def test_student_portal_shows_only_the_signed_in_students_workspace(self):
+        self.client.force_login(self.student_user)
+
+        response = self.client.get(reverse("accounts:student-portal"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "My learning")
+        self.assertContains(response, "CSE201")
+        self.assertContains(response, "20260010")
+
+    def test_student_login_redirects_to_their_portal(self):
+        response = self.client.post(
+            reverse("accounts:login"),
+            {"username": "student", "password": "StrongPassword123"},
+        )
+
+        self.assertRedirects(response, reverse("accounts:student-portal"))

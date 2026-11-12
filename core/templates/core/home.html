@@ -1,70 +1,103 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>StraitAI · Academic outcomes</title>
-  <style>
-    :root { --ink:#13263f; --muted:#6c7a90; --line:#e4eaf1; --canvas:#f4f7fb; --panel:#fff; --navy:#183960; --mint:#23b7a9; --mint-pale:#e6f7f4; --amber:#f3b34c; }
-    * { box-sizing:border-box; }
-    body { margin:0; background:var(--canvas); color:var(--ink); font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif; }
-    .shell { min-height:100vh; display:grid; grid-template-columns:244px 1fr; }
-    aside { background:var(--navy); color:#cfdded; padding:28px 17px; }
-    .brand { display:flex; align-items:center; gap:10px; color:#fff; font-weight:800; font-size:1.18rem; letter-spacing:-.02em; }
-    .mark { display:grid; place-items:center; width:32px; height:32px; border-radius:10px; background:var(--mint); color:#083e43; font-weight:900; }
-    .eyebrow { color:var(--mint); font-size:.72rem; font-weight:800; letter-spacing:.12em; text-transform:uppercase; }
-    .workspace { margin:35px 11px 12px; color:#8ca8c9; font-size:.7rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; }
-    nav a { display:block; padding:11px 12px; margin:3px 0; border-radius:9px; color:#cfdded; text-decoration:none; font-size:.9rem; }
-    nav a.active, nav a:hover { color:#fff; background:rgba(255,255,255,.12); }
-    .note { margin:37px 4px 0; padding:15px; border:1px solid rgba(255,255,255,.13); border-radius:12px; background:rgba(4,18,42,.22); color:#bed0e4; font-size:.78rem; line-height:1.5; }
-    .note strong { display:block; color:#fff; margin-bottom:4px; }
-    main { width:100%; max-width:1480px; margin:0 auto; padding:30px clamp(20px,4vw,56px); }
-    header { display:flex; align-items:center; justify-content:space-between; gap:18px; margin-bottom:29px; }
-    h1 { margin:5px 0 0; font-size:clamp(1.6rem,3vw,2.2rem); letter-spacing:-.05em; }
-    h2 { margin:0; font-size:1rem; letter-spacing:-.02em; }
-    .profile { display:flex; align-items:center; gap:10px; color:var(--muted); font-size:.83rem; }
-    .avatar { width:37px; height:37px; display:grid; place-items:center; border-radius:50%; background:#cbe2f7; color:var(--navy); font-weight:800; }
-    .notice { display:flex; align-items:center; gap:11px; margin-bottom:23px; padding:14px 17px; border:1px solid #c9eeea; border-radius:12px; background:var(--mint-pale); color:#166d67; font-size:.88rem; }
-    .notice b { color:#095b55; } .notice span { margin-left:auto; color:#48958f; font-size:.75rem; }
-    .kpis { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px; }
-    .card { padding:19px; border:1px solid var(--line); border-radius:14px; background:var(--panel); box-shadow:0 3px 13px rgba(22,44,77,.035); }
-    .metric-label { color:var(--muted); font-size:.77rem; font-weight:700; } .metric { margin:8px 0 3px; font-size:1.8rem; font-weight:800; letter-spacing:-.05em; }
-    .trend { color:#158863; font-size:.75rem; font-weight:700; } .muted { color:var(--muted); font-weight:500; }
-    .dashboard { display:grid; grid-template-columns:minmax(0,1.45fr) minmax(280px,.9fr); gap:18px; margin-top:18px; }
-    .section-title { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
-    .pill { padding:5px 9px; border-radius:99px; background:#edf2f8; color:#57677e; font-size:.69rem; font-weight:700; }
-    .outcome { margin-top:17px; }.outcome-row { display:flex; justify-content:space-between; gap:12px; margin-bottom:7px; font-size:.82rem; }.outcome-row span { color:#42536c; }.outcome-row strong { color:var(--ink); }
-    .track { height:9px; overflow:hidden; border-radius:99px; background:#edf1f6; }.bar { height:100%; border-radius:inherit; background:linear-gradient(90deg,#20baaf,#76d5bd); }
-    .tasks { margin:0; padding:0; list-style:none; }.tasks li { display:flex; gap:12px; padding:14px 0; border-bottom:1px solid var(--line); }.tasks li:last-child { border:0; padding-bottom:0; }
-    .task-icon { width:30px; height:30px; flex:0 0 30px; display:grid; place-items:center; border-radius:9px; background:#fff3dc; color:#b06a06; }.task-copy strong { display:block; margin:1px 0 4px; font-size:.82rem; }.task-copy small { color:var(--muted); font-size:.74rem; }
-    .coverage { margin-top:18px; padding:21px; border-radius:14px; background:var(--navy); color:#fff; }.coverage h2 { margin-top:6px; }.coverage p { max-width:700px; margin:8px 0 0; color:#bed0e5; font-size:.82rem; line-height:1.5; }
-    @media (max-width:880px) { .shell { grid-template-columns:1fr; } aside { display:none; } .kpis { grid-template-columns:repeat(2,1fr); } .dashboard { grid-template-columns:1fr; } }
-    @media (max-width:520px) { main { padding:22px 16px; }.profile,.notice span { display:none; }.kpis { grid-template-columns:1fr; } }
-  </style>
-</head>
-<body>
-  <div class="shell">
-    <aside>
-      <div class="brand"><span class="mark">S</span> StraitAI</div>
-      <p class="workspace">Academic workspace</p>
-      <nav><a class="active" href="/">◈ &nbsp;Overview</a><a href="#outcomes">◎ &nbsp;Learning outcomes</a><a href="#actions">✓ &nbsp;Assessments</a><a href="#courses">▤ &nbsp;Courses</a><a href="/admin/">⚙ &nbsp;Administration</a></nav>
-      <div class="note"><strong>Demo workspace</strong>This preview uses placeholder data. Academic records and calculated scores will arrive in later milestones. <a href="/academics/setup/" style="color:#fff">Open academic setup →</a></div>
+{% extends "core/base.html" %}
+
+{% block title %}StraitAI | Academic outcomes, made visible{% endblock %}
+
+{% block content %}
+  <section class="home-hero">
+    <div>
+      <div class="eyebrow">Outcome-based academic intelligence</div>
+      <h1>Turn assessment evidence into outcomes your department can act on.</h1>
+      <p>StraitAI connects academic structure, student enrollments, assessment grades, learning outcomes, and program outcomes in one focused workspace.</p>
+      <div class="hero-actions">
+        {% if user.is_authenticated %}
+          {% if user.student_profile %}
+            <a class="button" href="{% url 'accounts:student-portal' %}">Open my learning portal</a>
+          {% else %}
+            <a class="button" href="{% url 'assessments:list' %}">Open assessment workspace</a>
+            <a class="button secondary" href="{% url 'academics:setup' %}">Manage academic data</a>
+          {% endif %}
+        {% else %}
+          <a class="button" href="{% url 'accounts:login' %}">Open demo workspace</a>
+          <a class="button secondary" href="#live-data">Explore live data</a>
+        {% endif %}
+      </div>
+    </div>
+    <aside class="demo-panel">
+      {% if demo_data_available %}
+        <div class="live-chip">Live demo data loaded</div>
+        <h2 style="margin-top:14px">Ready to present</h2>
+        <p>Use either account below to walk through real seeded courses, assessments, grades, and calculated scores.</p>
+        <div class="credential"><span>Department Head</span><strong>demo.head</strong></div>
+        <div class="credential"><span>Instructor</span><strong>demo.instructor</strong></div>
+        <div class="credential"><span>Demo password</span><strong>DemoPass123!</strong></div>
+      {% else %}
+        <div class="live-chip">Workspace setup</div>
+        <h2 style="margin-top:14px">Start with your data</h2>
+        <p>Create your program structure, students, and offerings—or load the project demo dataset for a complete walkthrough.</p>
+        <div class="credential"><span>Seed command</span><strong>seed_demo_data</strong></div>
+      {% endif %}
     </aside>
-    <main>
-      <header><div><div class="eyebrow">Fall 2026 · CSE Department</div><h1>Academic outcomes, at a glance.</h1></div><div class="profile"><div class="avatar">FA</div><div><strong>Department Head</strong><br>StraitAI preview</div></div></header>
-      <div class="notice">✦ <div><b>Demo workspace</b> · Values below are mock data used to preview the dashboard layout.</div><span>Updated just now</span></div>
-      <section class="kpis" aria-label="Program snapshot">
-        <article class="card"><div class="metric-label">Program achievement</div><div class="metric">87.4%</div><div class="trend">↑ 3.2% from last term</div></article>
-        <article class="card"><div class="metric-label">Active students</div><div class="metric">184</div><div class="trend muted">Across 12 course sections</div></article>
-        <article class="card"><div class="metric-label">Assessments recorded</div><div class="metric">36</div><div class="trend">↑ 8 submitted this week</div></article>
-        <article class="card"><div class="metric-label">Coverage</div><div class="metric">93%</div><div class="trend muted">Outcome mappings complete</div></article>
-      </section>
-      <section class="dashboard">
-        <article class="card" id="outcomes"><div class="section-title"><h2>Learning outcome snapshot</h2><span class="pill">Current term</span></div>{% for outcome in outcomes %}<div class="outcome"><div class="outcome-row"><span>{{ outcome.label }}</span><strong>{{ outcome.score }}%</strong></div><div class="track"><div class="bar" style="width: {{ outcome.score }}%"></div></div></div>{% endfor %}</article>
-        <article class="card" id="actions"><div class="section-title"><h2>Next actions</h2><span class="pill">3 items</span></div><ul class="tasks"><li><div class="task-icon">↥</div><div class="task-copy"><strong>Import CSE 321 grades</strong><small>Midterm · due Friday</small></div></li><li><div class="task-icon">◎</div><div class="task-copy"><strong>Review PO coverage</strong><small>2 outcomes need mapping</small></div></li><li><div class="task-icon">◷</div><div class="task-copy"><strong>Publish term report</strong><small>Available after grade review</small></div></li></ul></article>
-      </section>
-      <section class="coverage" id="courses"><div class="eyebrow" style="color:#73ddd3">Designed for outcome evidence</div><h2>One place for courses, assessments, and achievement.</h2><p>The production dashboard will calculate these figures from entered grades and weighted LO/PO mappings.</p></section>
-    </main>
-  </div>
-</body>
-</html>
+  </section>
+
+  <section id="live-data" class="section">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">Workspace snapshot</div>
+        <h2>Live academic data</h2>
+      </div>
+      {% if database_ready %}<span class="live-chip">Database connected</span>{% endif %}
+    </div>
+
+    {% if database_ready %}
+      <div class="metric-grid" aria-label="Academic workspace metrics">
+        {% for metric in metrics %}
+          <article class="card">
+            <div class="metric-label">{{ metric.label }}</div>
+            <div class="metric">{{ metric.value }}</div>
+            <div class="metric-detail">{{ metric.detail }}</div>
+          </article>
+        {% endfor %}
+      </div>
+
+      <article class="card">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Configured offerings</div>
+            <h2>Courses ready for outcome tracking</h2>
+          </div>
+          {% if user.is_authenticated %}<a class="button secondary" href="{% url 'assessments:list' %}">View assessments</a>{% endif %}
+        </div>
+        {% if offerings %}
+          <div class="table-wrap">
+            <table class="table">
+              <tr><th>Course offering</th><th>Term</th><th>Students</th><th>Assessments</th><th>Instructors</th></tr>
+              {% for offering in offerings %}
+                <tr>
+                  <td><span class="offering-code">{{ offering.course.code }} · Section {{ offering.section }}</span><span class="offering-meta">{{ offering.course.title }} · {{ offering.course.program.code }}</span></td>
+                  <td>{{ offering.term }}</td>
+                  <td>{{ offering.active_student_count }}</td>
+                  <td>{{ offering.assessment_count }}</td>
+                  <td>{{ offering.instructor_count }}</td>
+                </tr>
+              {% endfor %}
+            </table>
+          </div>
+        {% else %}
+          <p class="empty">No offerings have been created yet.</p>
+        {% endif %}
+      </article>
+    {% else %}
+      <article class="card">
+        <div class="eyebrow">No data yet</div>
+        <h2>Connect the database and add a first program</h2>
+        <p class="subhead" style="margin-bottom:0">After migrations run, load the demo with <code>uv run python manage.py seed_demo_data</code> to populate this dashboard with complete sample records.</p>
+      </article>
+    {% endif %}
+  </section>
+
+  <section class="feature-grid" aria-label="StraitAI capabilities">
+    <article class="feature-card"><div class="feature-icon">01</div><h2>Model academic structure</h2><p>Programs, terms, courses, outcomes, offerings, students, and roles stay organized in one system.</p></article>
+    <article class="feature-card"><div class="feature-icon">02</div><h2>Capture assessment evidence</h2><p>Instructors map assessments to learning outcomes and record grades for active enrollments.</p></article>
+    <article class="feature-card"><div class="feature-icon">03</div><h2>Calculate meaningful scores</h2><p>Weighted calculations make learning-outcome and program-outcome progress clear for every student.</p></article>
+  </section>
+{% endblock %}

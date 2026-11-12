@@ -1,0 +1,81 @@
+{% extends "core/base.html" %}
+
+{% block title %}My learning | StraitAI{% endblock %}
+
+{% block content %}
+  <div class="eyebrow">Student workspace</div>
+  <h1>My learning</h1>
+  <p class="subhead">{{ student.user.get_full_name|default:student.user.username }} · {{ student.student_number }} · {{ student.program.code }}. Review your course evidence and calculated outcome progress.</p>
+
+  <section class="grid">
+    <article class="card"><div class="label">Active courses</div><div class="metric">{{ active_course_count }}</div></article>
+    <article class="card"><div class="label">Recorded grades</div><div class="metric">{{ recorded_grade_count }}</div></article>
+    <article class="card"><div class="label">Program</div><div class="metric" style="font-size:1.25rem">{{ student.program.code }}</div></article>
+  </section>
+
+  {% for course_card in course_cards %}
+    <section class="section card">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">{{ course_card.enrollment.offering.term }} · Section {{ course_card.enrollment.offering.section }}</div>
+          <h2>{{ course_card.enrollment.offering.course.code }} · {{ course_card.enrollment.offering.course.title }}</h2>
+        </div>
+        <span class="live-chip">{{ course_card.enrollment.get_status_display }}</span>
+      </div>
+
+      <h3 style="margin:22px 0 10px;font-size:.9rem">Assessment grades</h3>
+      {% if course_card.grades %}
+        <div class="table-wrap">
+          <table class="table">
+            <tr><th>Assessment</th><th>Type</th><th>Score</th><th>Percentage</th></tr>
+            {% for grade in course_card.grades %}
+              <tr>
+                <td>{{ grade.assessment.title }}</td>
+                <td>{{ grade.assessment.get_kind_display }}</td>
+                <td>{{ grade.score }} / {{ grade.maximum_score }}</td>
+                <td>{{ grade.percentage }}</td>
+              </tr>
+            {% endfor %}
+          </table>
+        </div>
+      {% else %}
+        <p class="empty">No grades have been recorded for this course yet.</p>
+      {% endif %}
+
+      <div class="feature-grid" style="margin-top:18px">
+        <article class="feature-card">
+          <div class="eyebrow">Learning outcomes</div>
+          {% if course_card.learning_scores %}
+            <div class="table-wrap">
+              <table class="table">
+                <tr><th>Outcome</th><th>Score</th></tr>
+                {% for score in course_card.learning_scores %}
+                  <tr><td title="{{ score.learning_outcome.description }}">{{ score.learning_outcome.code }}</td><td>{{ score.display_score }}</td></tr>
+                {% endfor %}
+              </table>
+            </div>
+          {% else %}
+            <p class="empty">No learning-outcome evidence is available yet.</p>
+          {% endif %}
+        </article>
+        <article class="feature-card program-outcome-card">
+          <div class="eyebrow">Program outcomes</div>
+          {% if course_card.program_scores %}
+            <div class="table-wrap">
+              <table class="table">
+                <tr><th>Outcome</th><th>Score</th><th>Evidence</th></tr>
+                {% for score in course_card.program_scores %}
+                  <tr><td title="{{ score.program_outcome.description }}">{{ score.program_outcome.code }}</td><td>{{ score.display_score }}</td><td>{{ score.contributing_learning_outcome_count }} learning outcome(s)</td></tr>
+                {% endfor %}
+              </table>
+            </div>
+          {% else %}
+            <p class="empty">No program-outcome evidence is available yet.</p>
+          {% endif %}
+        </article>
+      </div>
+    </section>
+  {% empty %}
+    <section class="section card"><p class="empty">You are not enrolled in any course offerings yet.</p></section>
+  {% endfor %}
+{% endblock %}
