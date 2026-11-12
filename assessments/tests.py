@@ -5,8 +5,17 @@ from django.core.exceptions import ValidationError
 from django.test import TestCase
 
 from accounts.models import Enrollment, StudentProfile
-from academics.models import AcademicTerm, Course, CourseOffering, LearningOutcome, Program
+from academics.models import (
+    AcademicTerm,
+    Course,
+    CourseOffering,
+    LearningOutcome,
+    LearningOutcomeProgramOutcomeMapping,
+    Program,
+    ProgramOutcome,
+)
 from assessments.models import Assessment, AssessmentLearningOutcomeMapping, Grade
+from assessments.program_outcome_scoring import calculate_program_outcome_scores
 from assessments.scoring import calculate_learning_outcome_scores
 from assessments.services import save_bulk_grades
 
@@ -118,3 +127,64 @@ class GradeEntryTests(TestCase):
         self.assertEqual([outcome.code for outcome in outcomes], ["LO1"])
         self.assertEqual(student_scores[0].scores[0].score, Decimal("57.50"))
         self.assertEqual(student_scores[0].scores[0].graded_assessment_count, 2)
+
+    def test_program_outcome_score_uses_weighted_learning_outcomes(self):
+        learning_outcome_one = LearningOutcome.objects.create(
+            course=self.course, code="LO1", description="Build a data model"
+        )
+        learning_outcome_two = LearningOutcome.objects.create(
+            course=self.course, code="LO2", description="Query a data model"
+        )
+        ungraded_learning_outcome = LearningOutcome.objects.create(
+            course=self.course, code="LO3", description="Optimize a data model"
+        )
+        program_outcome = ProgramOutcome.objects.create(
+            program=self.program, code="PO1", description="Apply data systems knowledge"
+        )
+        LearningOutcomeProgramOutcomeMapping.objects.create(
+            learning_outcome=learning_outcome_one,
+            program_outcome=program_outcome,
+            weight=Decimal("1.000"),
+        )
+        LearningOutcomeProgramOutcomeMapping.objects.create(
+            learning_outcome=learning_outcome_two,
+            program_outcome=program_outcome,
+            weight=Decimal("3.000"),
+        )
+        LearningOutcomeProgramOutcomeMapping.objects.create(
+            learning_outcome=ungraded_learning_outcome,
+            program_outcome=program_outcome,
+            weight=Decimal("10.000"),
+        )
+        AssessmentLearningOutcomeMapping.objects.create(
+            assessment=self.assessment,
+            learning_outcome=learning_outcome_one,
+            weight=Decimal("1.000"),
+        )
+        Grade.objects.create(
+            assessment=self.assessment,
+            enrollment=self.enrollment,
+            score=Decimal("80.00"),
+        )
+        final_exam = Assessment.objects.create(
+            offering=self.offering,
+            title="Final",
+            kind=Assessment.Kind.EXAM,
+            max_score=Decimal("100.00"),
+        )
+        AssessmentLearningOutcomeMapping.objects.create(
+            assessment=final_exam,
+            learning_outcome=learning_outcome_two,
+            weight=Decimal("1.000"),
+        )
+        Grade.objects.create(
+            assessment=final_exam,
+            enrollment=self.enrollment,
+            score=Decimal("60.00"),
+        )
+
+        program_outcomes, student_scores = calculate_program_outcome_scores(self.offering)
+
+        self.assertEqual([outcome.code for outcome in program_outcomes], ["PO1"])
+        self.assertEqual(student_scores[0].scores[0].score, Decimal("65.00"))
+        self.assertEqual(student_scores[0].scores[0].contributing_learning_outcome_count, 2)

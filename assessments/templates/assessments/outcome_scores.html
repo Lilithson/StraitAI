@@ -36,6 +36,7 @@
     {% endif %}
 
     <div class="actions">
+      <a class="button" href="{% url 'assessments:program-outcome-scores' offering.pk %}">View program outcome scores</a>
       <a class="button secondary" href="{% url 'assessments:list' %}">Back to assessments</a>
     </div>
   </div>

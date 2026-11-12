@@ -15,6 +15,7 @@ from assessments.forms import (
     build_grade_formset,
 )
 from assessments.models import Assessment
+from assessments.program_outcome_scoring import calculate_program_outcome_scores
 from assessments.services import save_bulk_grades
 from assessments.scoring import calculate_learning_outcome_scores
 
@@ -140,6 +141,27 @@ class OutcomeScoreView(AssessmentManagerRequiredMixin, TemplateView):
             {
                 "offering": offering,
                 "learning_outcomes": learning_outcomes,
+                "student_scores": student_scores,
+            }
+        )
+        return context
+
+
+class ProgramOutcomeScoreView(AssessmentManagerRequiredMixin, TemplateView):
+    template_name = "assessments/program_outcome_scores.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        offering = get_object_or_404(
+            CourseOffering.objects.select_related("course__program", "term"), pk=self.kwargs["pk"]
+        )
+        if not can_manage_offering(self.request.user, offering):
+            raise PermissionDenied
+        program_outcomes, student_scores = calculate_program_outcome_scores(offering)
+        context.update(
+            {
+                "offering": offering,
+                "program_outcomes": program_outcomes,
                 "student_scores": student_scores,
             }
         )
